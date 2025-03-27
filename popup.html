@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Reddit Explainer</title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Reddit Explainer</h1>
+    </header>
+    
+    <div id="not-reddit" class="hidden">
+      <p>Please navigate to a Reddit post to use this extension.</p>
+    </div>
+    
+    <div id="loading" class="hidden">
+      <p>Analyzing post...</p>
+      <div class="spinner"></div>
+    </div>
+    
+    <div id="error" class="hidden">
+      <p>Sorry, there was an error processing this post.</p>
+    </div>
+    
+    <div id="main-content">
+      <div class="explanation-type">
+        <label for="explanation-level">Explain this post like I'm:</label>
+        <select id="explanation-level">
+          <option value="simple">A 5-year-old (ELI5)</option>
+          <option value="non-technical">A non-technical person</option>
+          <option value="beginner">A beginner in this topic</option>
+          <option value="advanced">Looking for an in-depth explanation</option>
+        </select>
+      </div>
+      
+      <button id="explain-button">Explain this post</button>
+      
+      <div id="result" class="hidden">
+        <h2>Explanation:</h2>
+        <div id="explanation-text"></div>
+      </div>
+      
+      <div id="api-key-notice" class="api-notice">
+        <p>Using mock explanations. <a href="#" id="options-link">Configure your API key</a> for real AI explanations.</p>
+      </div>
+    </div>
+    
+    <footer>
+      <p>Powered by AI - Reddit Explainer | <a href="#" id="settings-link">Settings</a></p>
+    </footer>
+  </div>
+  
+  <!-- Load the AI Service first -->
+  <script src="ai-service.js"></script>
+  <!-- Then load the popup script that uses it -->
+  <script src="popup.js"></script>
+</body>
+</html> 

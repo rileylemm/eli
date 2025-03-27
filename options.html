@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Reddit Explainer Options</title>
+  <meta charset="utf-8">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+      color: #333;
+    }
+    
+    h1 {
+      color: #FF5700;
+      font-size: 24px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    
+    select, input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    
+    button {
+      background-color: #FF5700;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    button:hover {
+      background-color: #e24e00;
+    }
+    
+    .status {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    
+    .api-info {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 30px;
+    }
+    
+    .api-info h2 {
+      font-size: 18px;
+      margin-top: 0;
+    }
+    
+    .api-info a {
+      color: #0366d6;
+      text-decoration: none;
+    }
+    
+    .api-info a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h1>Reddit Explainer Settings</h1>
+  
+  <div class="form-group">
+    <label for="api-service">AI Service Provider:</label>
+    <select id="api-service">
+      <option value="openai">OpenAI (GPT-3.5/GPT-4)</option>
+      <option value="anthropic">Anthropic (Claude)</option>
+      <option value="custom">Custom API Endpoint</option>
+    </select>
+  </div>
+  
+  <div class="form-group">
+    <label for="api-key">API Key:</label>
+    <input type="password" id="api-key" placeholder="Enter your API key">
+  </div>
+  
+  <div id="custom-endpoint-group" class="form-group" style="display: none;">
+    <label for="custom-endpoint">Custom API Endpoint:</label>
+    <input type="text" id="custom-endpoint" placeholder="https://your-api-endpoint.com">
+  </div>
+  
+  <div class="form-group">
+    <label for="model">Model (if applicable):</label>
+    <input type="text" id="model" placeholder="e.g., gpt-4-turbo, claude-3-opus">
+  </div>
+  
+  <button id="save-button">Save Settings</button>
+  
+  <div id="status" class="status" style="display: none;"></div>
+  
+  <div class="api-info">
+    <h2>How to Get an API Key</h2>
+    <p>To use this extension with your own AI service, you'll need an API key. Here's how to get one:</p>
+    <ul>
+      <li><strong>OpenAI:</strong> <a href="https://platform.openai.com/signup" target="_blank">Sign up for an OpenAI API key</a></li>
+      <li><strong>Anthropic:</strong> <a href="https://www.anthropic.com/product" target="_blank">Sign up for Claude API access</a></li>
+    </ul>
+    <p><strong>Note:</strong> API usage will incur charges based on your provider's pricing. The extension will only make requests when you click "Explain this post".</p>
+    
+    <h2>Privacy</h2>
+    <p>Your API key is stored locally on your device using Chrome's secure storage. It is never sent to any server other than the AI provider you selected.</p>
+  </div>
+  
+  <script src="options.js"></script>
+</body>
+</html> 

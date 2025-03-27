@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Reddit Explainer",
+  "version": "1.0",
+  "description": "Explains Reddit posts in a simplified way that's easy to understand",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": ["*://*.reddit.com/*"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "images/image.png"
+  },
+  "options_page": "options.html",
+  "content_scripts": [
+    {
+      "matches": ["*://*.reddit.com/r/*/comments/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "icons": {
+    "16": "images/image.png",
+    "48": "images/image.png",
+    "128": "images/image.png"
+  }
+}
