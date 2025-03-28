@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
   const explainButton = document.getElementById('explain-button');
   const explanationLevel = document.getElementById('explanation-level');
+  const customLevelContainer = document.getElementById('custom-level-container');
+  const customLevelInput = document.getElementById('custom-level');
   const notRedditDiv = document.getElementById('not-reddit');
   const mainContentDiv = document.getElementById('main-content');
   const loadingDiv = document.getElementById('loading');
@@ -17,6 +19,15 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Check if API key is configured
   checkApiKeyStatus();
+  
+  // Show/hide custom level input based on selection
+  explanationLevel.addEventListener('change', function() {
+    if (explanationLevel.value === 'custom') {
+      customLevelContainer.classList.remove('hidden');
+    } else {
+      customLevelContainer.classList.add('hidden');
+    }
+  });
   
   // Add click handlers for settings links
   optionsLink.addEventListener('click', openOptions);
@@ -61,6 +72,16 @@ document.addEventListener('DOMContentLoaded', function() {
     explainButton.addEventListener('click', function() {
       // Get the selected explanation level
       const level = explanationLevel.value;
+      
+      // If custom level is selected, set the custom description
+      if (level === 'custom') {
+        const customText = customLevelInput.value.trim();
+        if (!customText) {
+          showError("Please enter a custom explanation level");
+          return;
+        }
+        aiService.setCustomLevelDescription(customText);
+      }
       
       // Show loading state
       loadingDiv.classList.remove('hidden');

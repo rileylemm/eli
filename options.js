@@ -6,6 +6,10 @@ const customEndpointInput = document.getElementById('custom-endpoint');
 const modelInput = document.getElementById('model');
 const saveButton = document.getElementById('save-button');
 const statusDiv = document.getElementById('status');
+const maxTokensSlider = document.getElementById('max-tokens');
+const maxTokensValue = document.getElementById('max-tokens-value');
+const temperatureSlider = document.getElementById('temperature');
+const temperatureValue = document.getElementById('temperature-value');
 
 // Load saved settings when the options page is opened
 document.addEventListener('DOMContentLoaded', loadSettings);
@@ -19,6 +23,23 @@ apiServiceSelect.addEventListener('change', function() {
   }
 });
 
+// Sync slider and number inputs
+maxTokensSlider.addEventListener('input', () => {
+  maxTokensValue.value = maxTokensSlider.value;
+});
+
+maxTokensValue.addEventListener('input', () => {
+  maxTokensSlider.value = maxTokensValue.value;
+});
+
+temperatureSlider.addEventListener('input', () => {
+  temperatureValue.value = temperatureSlider.value;
+});
+
+temperatureValue.addEventListener('input', () => {
+  temperatureSlider.value = temperatureValue.value;
+});
+
 // Save settings when the save button is clicked
 saveButton.addEventListener('click', saveSettings);
 
@@ -29,13 +50,19 @@ function loadSettings() {
       apiService: 'openai',
       apiKey: '',
       customEndpoint: '',
-      model: ''
+      model: '',
+      maxTokens: 325,
+      temperature: 0.3
     },
     function(items) {
       apiServiceSelect.value = items.apiService;
       apiKeyInput.value = items.apiKey;
       customEndpointInput.value = items.customEndpoint;
       modelInput.value = items.model;
+      maxTokensSlider.value = items.maxTokens;
+      maxTokensValue.value = items.maxTokens;
+      temperatureSlider.value = items.temperature;
+      temperatureValue.value = items.temperature;
       
       // Show custom endpoint field if 'custom' is selected
       if (items.apiService === 'custom') {
@@ -51,6 +78,8 @@ function saveSettings() {
   const apiKey = apiKeyInput.value.trim();
   const customEndpoint = customEndpointInput.value.trim();
   const model = modelInput.value.trim();
+  const maxTokens = parseInt(maxTokensSlider.value);
+  const temperature = parseFloat(temperatureSlider.value);
   
   // Validate inputs
   if (!apiKey) {
@@ -69,7 +98,9 @@ function saveSettings() {
       apiService: apiService,
       apiKey: apiKey,
       customEndpoint: customEndpoint,
-      model: model
+      model: model,
+      maxTokens: maxTokens,
+      temperature: temperature
     },
     function() {
       showStatus('Settings saved successfully!', 'success');

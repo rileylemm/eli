@@ -4,11 +4,62 @@
   <title>Reddit Explainer</title>
   <meta charset="utf-8">
   <link rel="stylesheet" href="popup.css">
+  <style>
+    .help-icon {
+      display: inline-block;
+      margin-left: 5px;
+      width: 16px;
+      height: 16px;
+      background-color: #ccc;
+      color: white;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 16px;
+      font-size: 12px;
+      cursor: help;
+      position: relative;
+    }
+    
+    .tooltip {
+      visibility: hidden;
+      width: 250px;
+      background-color: #555;
+      color: #fff;
+      text-align: left;
+      border-radius: 6px;
+      padding: 10px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 50%;
+      margin-left: -125px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    
+    .help-icon:hover .tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+    
+    .tooltip::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: #555 transparent transparent transparent;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>Reddit Explainer</h1>
+      <h1>eli</h1>
     </header>
     
     <div id="not-reddit" class="hidden">
@@ -33,7 +84,22 @@
           <option value="non-technical">A non-technical person</option>
           <option value="beginner">A beginner in this topic</option>
           <option value="advanced">Looking for an in-depth explanation</option>
+          <option value="more-context">Someone who needs more context</option>
+          <option value="custom">Custom (specify below)</option>
         </select>
+        <span class="help-icon">?
+          <span class="tooltip">
+            <strong>New Features:</strong><br>
+            • Multiple explanation levels including custom<br>
+            • Support for OpenAI, Anthropic & DeepSeek<br>
+            • Customize response length in Settings<br>
+            • Adjust response focus/creativity in Settings
+          </span>
+        </span>
+      </div>
+      
+      <div id="custom-level-container" class="hidden">
+        <input type="text" id="custom-level" placeholder="e.g., a doctor, a programmer, etc.">
       </div>
       
       <button id="explain-button">Explain this post</button>
@@ -49,7 +115,7 @@
     </div>
     
     <footer>
-      <p>Powered by AI - Reddit Explainer | <a href="#" id="settings-link">Settings</a></p>
+      <p>Powered by AI - eli | <a href="#" id="settings-link">Settings</a></p>
     </footer>
   </div>
   

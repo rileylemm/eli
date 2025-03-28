@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Reddit Explainer Options</title>
+  <title>eli Options</title>
   <meta charset="utf-8">
   <style>
     body {
@@ -19,6 +19,14 @@
       padding-bottom: 10px;
     }
     
+    h2 {
+      font-size: 18px;
+      margin-top: 30px;
+      margin-bottom: 15px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid #eee;
+    }
+    
     .form-group {
       margin-bottom: 20px;
     }
@@ -29,13 +37,27 @@
       font-weight: 500;
     }
     
-    select, input[type="text"], input[type="password"] {
+    select, input[type="text"], input[type="password"], input[type="range"], input[type="number"] {
       width: 100%;
       padding: 8px;
       border: 1px solid #ccc;
       border-radius: 4px;
       font-size: 14px;
       box-sizing: border-box;
+    }
+    
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .slider-container input[type="range"] {
+      flex: 1;
+    }
+    
+    .slider-container input[type="number"] {
+      width: 60px;
     }
     
     button {
@@ -78,6 +100,8 @@
     .api-info h2 {
       font-size: 18px;
       margin-top: 0;
+      border-bottom: none;
+      padding-bottom: 0;
     }
     
     .api-info a {
@@ -88,16 +112,25 @@
     .api-info a:hover {
       text-decoration: underline;
     }
+    
+    .model-help, .param-help {
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
+    }
   </style>
 </head>
 <body>
-  <h1>Reddit Explainer Settings</h1>
+  <h1>eli Settings</h1>
+  
+  <h2>API Configuration</h2>
   
   <div class="form-group">
     <label for="api-service">AI Service Provider:</label>
     <select id="api-service">
       <option value="openai">OpenAI (GPT-3.5/GPT-4)</option>
       <option value="anthropic">Anthropic (Claude)</option>
+      <option value="deepseek">DeepSeek AI</option>
       <option value="custom">Custom API Endpoint</option>
     </select>
   </div>
@@ -115,6 +148,27 @@
   <div class="form-group">
     <label for="model">Model (if applicable):</label>
     <input type="text" id="model" placeholder="e.g., gpt-4-turbo, claude-3-opus">
+    <div id="model-help" class="model-help">Leave blank to use the default model for the selected service.</div>
+  </div>
+  
+  <h2>Response Settings</h2>
+  
+  <div class="form-group">
+    <label for="max-tokens">Response Length:</label>
+    <div class="slider-container">
+      <input type="range" id="max-tokens" min="100" max="500" step="25" value="325">
+      <input type="number" id="max-tokens-value" min="100" max="500" value="325">
+    </div>
+    <div class="param-help">Lower values = shorter responses. Range: 100-500 tokens.</div>
+  </div>
+  
+  <div class="form-group">
+    <label for="temperature">Response Creativity:</label>
+    <div class="slider-container">
+      <input type="range" id="temperature" min="0" max="1" step="0.1" value="0.3">
+      <input type="number" id="temperature-value" min="0" max="1" step="0.1" value="0.3">
+    </div>
+    <div class="param-help">Lower values = more focused, predictable responses. Higher values = more creative, varied responses.</div>
   </div>
   
   <button id="save-button">Save Settings</button>
@@ -127,8 +181,16 @@
     <ul>
       <li><strong>OpenAI:</strong> <a href="https://platform.openai.com/signup" target="_blank">Sign up for an OpenAI API key</a></li>
       <li><strong>Anthropic:</strong> <a href="https://www.anthropic.com/product" target="_blank">Sign up for Claude API access</a></li>
+      <li><strong>DeepSeek:</strong> <a href="https://platform.deepseek.com/" target="_blank">Sign up for DeepSeek API access</a></li>
     </ul>
     <p><strong>Note:</strong> API usage will incur charges based on your provider's pricing. The extension will only make requests when you click "Explain this post".</p>
+    
+    <h2>Default Models</h2>
+    <ul>
+      <li><strong>OpenAI:</strong> gpt-3.5-turbo</li>
+      <li><strong>Anthropic:</strong> claude-3-haiku-20240307</li>
+      <li><strong>DeepSeek:</strong> deepseek-chat</li>
+    </ul>
     
     <h2>Privacy</h2>
     <p>Your API key is stored locally on your device using Chrome's secure storage. It is never sent to any server other than the AI provider you selected.</p>

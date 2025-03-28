@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Reddit Explainer",
-  "version": "1.0",
-  "description": "Explains Reddit posts in a simplified way that's easy to understand",
+  "name": "eli",
+  "version": "1.1",
+  "description": "Explains Reddit posts in a simplified way using AI with customizable explanation levels",
   "permissions": ["activeTab", "scripting", "storage"],
   "host_permissions": ["*://*.reddit.com/*"],
   "action": {

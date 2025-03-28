@@ -38,12 +38,18 @@ label {
   font-weight: 500;
 }
 
-select {
+select,
+input[type="text"] {
   width: 100%;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 14px;
+  box-sizing: border-box;
+}
+
+#custom-level-container {
+  margin-bottom: 15px;
 }
 
 button {

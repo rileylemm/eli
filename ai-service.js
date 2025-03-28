@@ -19,6 +19,10 @@ class AIService {
     this.model = '';
     this.useMock = true;
     
+    // Response parameters with defaults for concise, focused explanations
+    this.temperature = 0.3; // Lower temperature for more focused responses
+    this.maxTokens = 325;  // Token length as requested
+    
     // Initialize settings
     this.loadSettings();
   }
@@ -33,16 +37,28 @@ class AIService {
           apiService: 'openai',
           apiKey: '',
           customEndpoint: '',
-          model: ''
+          model: '',
+          temperature: 0.3,
+          maxTokens: 325
         },
         (items) => {
           this.apiService = items.apiService;
           this.apiKey = items.apiKey;
           this.customEndpoint = items.customEndpoint;
           this.model = items.model;
+          this.temperature = parseFloat(items.temperature) || 0.3;
+          this.maxTokens = parseInt(items.maxTokens) || 325;
           
           // Only use real API if we have an API key
           this.useMock = !items.apiKey;
+          
+          console.log('AI Service settings loaded:', {
+            service: this.apiService,
+            model: this.model,
+            temperature: this.temperature,
+            maxTokens: this.maxTokens,
+            useMock: this.useMock
+          });
           
           resolve();
         }
@@ -78,6 +94,8 @@ class AIService {
           return await this._callOpenAI(prompt, level);
         case 'anthropic':
           return await this._callAnthropic(prompt, level);
+        case 'deepseek':
+          return await this._callDeepSeek(prompt, level);
         case 'custom':
           return await this._callCustomAPI(prompt, level);
         default:
@@ -116,15 +134,15 @@ class AIService {
         messages: [
           {
             role: 'system',
-            content: `You are a helpful assistant that explains Reddit posts in simple terms. When responding, use language appropriate for ${this._getLevelDescription(level)}.`
+            content: `You are a helpful assistant that explains Reddit posts in simple terms. When responding, use language appropriate for ${this._getLevelDescription(level)}. Keep your explanations concise and to the point - aim for brevity.`
           },
           {
             role: 'user',
             content: prompt
           }
         ],
-        temperature: 0.7,
-        max_tokens: 500
+        temperature: this.temperature,
+        max_tokens: this.maxTokens
       })
     });
     
@@ -162,10 +180,11 @@ class AIService {
         messages: [
           {
             role: 'user',
-            content: `${prompt}\n\nExplain this Reddit post as if I were ${this._getLevelDescription(level)}.`
+            content: `${prompt}\n\nExplain this Reddit post as if I were ${this._getLevelDescription(level)}. Please be concise and straight to the point.`
           }
         ],
-        max_tokens: 500
+        temperature: this.temperature,
+        max_tokens: this.maxTokens
       })
     });
     
@@ -175,6 +194,51 @@ class AIService {
     
     const data = await response.json();
     return data.content[0].text;
+  }
+  
+  /**
+   * Call the DeepSeek API
+   * 
+   * @private
+   * @param {string} prompt - The AI prompt
+   * @param {string} level - Explanation level
+   * @returns {Promise<string>} - The explanation
+   */
+  async _callDeepSeek(prompt, level) {
+    const apiUrl = 'https://api.deepseek.com/v1/chat/completions';
+    
+    // Use default DeepSeek model if none specified
+    const modelToUse = this.model || 'deepseek-chat';
+    
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.apiKey}`
+      },
+      body: JSON.stringify({
+        model: modelToUse,
+        messages: [
+          {
+            role: 'system',
+            content: `You are a helpful assistant that explains Reddit posts in simple terms. When responding, use language appropriate for ${this._getLevelDescription(level)}. Keep your explanations concise and to the point.`
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: this.temperature,
+        max_tokens: this.maxTokens
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`DeepSeek API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data.choices[0].message.content.trim();
   }
   
   /**
@@ -200,7 +264,8 @@ class AIService {
         prompt: prompt,
         level: level,
         model: this.model || '',
-        max_tokens: 500
+        temperature: this.temperature,
+        max_tokens: this.maxTokens
       })
     });
     
@@ -229,6 +294,11 @@ class AIService {
         return "a beginner in this topic";
       case 'advanced':
         return "someone looking for an in-depth explanation";
+      case 'more-context':
+        return "someone who needs more context";
+      case 'custom':
+        // For custom explanation level (user-defined)
+        return this.customLevelDescription || "someone who needs more context";
       default:
         return "a 5-year-old (ELI5)";
     }
@@ -256,9 +326,9 @@ class AIService {
       ${postData.topComments.map((comment, i) => `${i+1}. ${comment}`).join("\n")}
       
       Please provide a clear, concise explanation that's appropriate for ${levelDescription}.
-      Your explanation should be friendly and conversational.
-      Simplify complex ideas but don't be condescending.
-      Focus on the main point of the post and the key insights from comments.
+      Your explanation should be brief and focused on the main points.
+      Avoid unnecessary details and keep your response short.
+      Focus only on the most important aspects of the post and key insights from comments.
     `;
   }
   
@@ -275,16 +345,22 @@ class AIService {
     
     switch(level) {
       case 'simple':
-        explanationIntro = "Here's a super simple explanation like you're 5 years old:";
+        explanationIntro = "Here's a simple ELI5:";
         break;
       case 'non-technical':
-        explanationIntro = "Here's an explanation without any technical jargon:";
+        explanationIntro = "Here's a non-technical explanation:";
         break;
       case 'beginner':
-        explanationIntro = "Here's an explanation for someone new to this topic:";
+        explanationIntro = "Here's a beginner-friendly explanation:";
         break;
       case 'advanced':
-        explanationIntro = "Here's an in-depth explanation of this post:";
+        explanationIntro = "Here's an in-depth explanation:";
+        break;
+      case 'more-context':
+        explanationIntro = "Here's an explanation with context:";
+        break;
+      case 'custom':
+        explanationIntro = "Here's a custom explanation:";
         break;
       default:
         explanationIntro = "Here's a simple explanation:";
@@ -292,15 +368,35 @@ class AIService {
     
     return `${explanationIntro}
     
-This Reddit post is about "${postData.title.substring(0, 40)}...". 
+This post is about "${postData.title.substring(0, 40)}...". 
 
-The main idea is ${postData.postContent.substring(0, 100)}...
-
-Based on the comments, people seem to be discussing various aspects of this topic. In a real version of this extension, this would be a thoughtful AI-generated explanation tailored to your selected comprehension level.
-
-A full implementation would connect to an AI service like OpenAI's GPT to provide accurate, helpful explanations of Reddit posts at your preferred level of detail.
+The main idea is ${postData.postContent.substring(0, 80)}...
 
 (Note: To get real AI explanations, please add your API key in the extension options page)`;
+  }
+  
+  /**
+   * Set a custom level description for custom explanations
+   * 
+   * @param {string} description - Custom level description
+   */
+  setCustomLevelDescription(description) {
+    this.customLevelDescription = description;
+  }
+  
+  /**
+   * Update response parameters
+   * 
+   * @param {Object} params - Parameters to update
+   */
+  updateResponseParams(params) {
+    if (params.temperature !== undefined) {
+      this.temperature = params.temperature;
+    }
+    
+    if (params.maxTokens !== undefined) {
+      this.maxTokens = params.maxTokens;
+    }
   }
 }
 
