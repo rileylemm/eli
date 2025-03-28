@@ -2,6 +2,14 @@
 
 A Chrome extension that uses AI to explain Reddit posts in a way that's easy to understand, with customizable explanation levels for different audiences.
 
+![eli Extension Logo](images/greenimage.png)
+
+## Screenshots
+
+![Screenshot of the extension popup](images/screenshot_1280x800.png)
+
+![Screenshot of the extension in action](images/screenshot_640x400.png)
+
 ## Features
 
 - **Multiple Explanation Levels**: Choose from various explanation styles (ELI5, non-technical, beginner, advanced, etc.) or create a custom explanation style.
