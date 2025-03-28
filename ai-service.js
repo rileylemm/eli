@@ -166,7 +166,7 @@ class AIService {
     const apiUrl = 'https://api.anthropic.com/v1/messages';
     
     // Use default Claude model if none specified
-    const modelToUse = this.model || 'claude-3-haiku-20240307';
+    const modelToUse = this.model || 'claude-3-haiku-20250307';
     
     const response = await fetch(apiUrl, {
       method: 'POST',

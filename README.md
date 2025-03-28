@@ -59,6 +59,15 @@ To use the extension with real AI explanations:
   - Lower values (0.1-0.3): More focused, predictable responses
   - Higher values (0.7-1.0): More creative, varied responses
 
+## Privacy
+
+We take your privacy seriously. This extension:
+- Stores your API keys and preferences locally on your device
+- Only sends data to the AI service you select, using your own API key
+- Never collects or stores your data on our servers
+
+For more details, see our [Privacy Policy](PRIVACY-POLICY.md).
+
 ## Development
 
 ### Project Structure
@@ -74,7 +83,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under a proprietary license that restricts commercial use, distribution, and modification. See the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
