@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const resultDiv = document.getElementById('result');
   const explanationText = document.getElementById('explanation-text');
   const errorDiv = document.getElementById('error');
+  const retryButton = document.getElementById('retry-button');
   const apiKeyNotice = document.getElementById('api-key-notice');
   const optionsLink = document.getElementById('options-link');
   const settingsLink = document.getElementById('settings-link');
@@ -20,6 +21,27 @@ document.addEventListener('DOMContentLoaded', function() {
   // Add click handlers for settings links
   optionsLink.addEventListener('click', openOptions);
   settingsLink.addEventListener('click', openOptions);
+  
+  // Add retry button functionality
+  retryButton.addEventListener('click', function() {
+    errorDiv.classList.add('hidden');
+    
+    // When retry is clicked, first try to inject the content script
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+      const currentTabId = tabs[0].id;
+      
+      // Attempt to inject content script via background script
+      chrome.runtime.sendMessage({
+        action: "injectContentScript", 
+        tabId: currentTabId
+      }, function(response) {
+        // After injection attempt, try to explain again
+        setTimeout(() => {
+          explainButton.click(); // Trigger the explain button click after a short delay
+        }, 300);
+      });
+    });
+  });
   
   // Check if we're on a Reddit post page
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
@@ -46,35 +68,111 @@ document.addEventListener('DOMContentLoaded', function() {
       resultDiv.classList.add('hidden');
       errorDiv.classList.add('hidden');
       
-      // Send a message to the content script to get the post data
-      chrome.tabs.sendMessage(tabs[0].id, {action: "getPostData"}, function(response) {
-        if (chrome.runtime.lastError || !response) {
-          showError();
+      // Try to inject content script first to ensure it's running
+      ensureContentScriptLoaded(tabs[0].id, function(success) {
+        if (!success) {
+          showError("Could not load content script. Please refresh the page and try again.");
           return;
         }
         
-        // We have the post data, now send it to the AI service
-        aiService.explainPost(response, level)
-          .then(explanation => {
-            // Show the explanation
-            explanationText.textContent = explanation;
-            resultDiv.classList.remove('hidden');
-            loadingDiv.classList.add('hidden');
-            mainContentDiv.classList.remove('hidden');
-          })
-          .catch(error => {
-            console.error('Error generating explanation:', error);
-            showError();
-          });
+        // Now try to get post data
+        getPostData(tabs[0].id, level);
       });
     });
   });
   
   /**
-   * Show error message
+   * Ensure the content script is loaded
+   * @param {number} tabId - Tab ID to check
+   * @param {function} callback - Callback with success status
    */
-  function showError() {
+  function ensureContentScriptLoaded(tabId, callback) {
+    // Try to ping the content script first to see if it's loaded
+    try {
+      chrome.tabs.sendMessage(tabId, {action: "ping"}, function(response) {
+        if (chrome.runtime.lastError) {
+          console.log("Content script not loaded, injecting via background script");
+          
+          // Content script not loaded, try to inject it
+          chrome.runtime.sendMessage({
+            action: "injectContentScript", 
+            tabId: tabId
+          }, function(response) {
+            if (response && response.success) {
+              console.log("Content script injected successfully");
+              callback(true);
+            } else {
+              console.error("Failed to inject content script");
+              callback(false);
+            }
+          });
+        } else {
+          // Content script is already loaded
+          console.log("Content script is already loaded");
+          callback(true);
+        }
+      });
+    } catch (e) {
+      console.error("Error checking content script:", e);
+      callback(false);
+    }
+  }
+  
+  /**
+   * Get post data from the content script
+   * @param {number} tabId - Tab ID
+   * @param {string} level - Explanation level
+   */
+  function getPostData(tabId, level) {
+    // Send a message to the content script to get the post data
+    chrome.tabs.sendMessage(tabId, {action: "getPostData"}, function(response) {
+      if (chrome.runtime.lastError) {
+        console.error("Runtime error:", chrome.runtime.lastError);
+        showError("Content script error: " + chrome.runtime.lastError.message);
+        return;
+      }
+      
+      if (!response) {
+        showError("No response from content script");
+        return;
+      }
+      
+      // Log response for debugging
+      console.log("Response from content script:", response);
+      
+      // Validate the response data
+      if (!response.title && !response.postContent && (!response.topComments || response.topComments.length === 0)) {
+        showError("Could not extract content from this Reddit post");
+        return;
+      }
+      
+      // We have the post data, now send it to the AI service
+      aiService.explainPost(response, level)
+        .then(explanation => {
+          // Show the explanation
+          explanationText.textContent = explanation;
+          resultDiv.classList.remove('hidden');
+          loadingDiv.classList.add('hidden');
+          mainContentDiv.classList.remove('hidden');
+        })
+        .catch(error => {
+          console.error('Error generating explanation:', error);
+          showError("Error generating explanation: " + error.message);
+        });
+    });
+  }
+  
+  /**
+   * Show error message
+   * @param {string} message - Optional error message
+   */
+  function showError(message) {
     loadingDiv.classList.add('hidden');
+    
+    if (message) {
+      errorDiv.querySelector('p').textContent = message || "Sorry, there was an error processing this post.";
+    }
+    
     errorDiv.classList.remove('hidden');
     mainContentDiv.classList.remove('hidden');
   }

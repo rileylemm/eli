@@ -69,6 +69,16 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.secondary-button {
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+}
+
+.secondary-button:hover {
+  background-color: #e0e0e0;
+}
+
 #explanation-text {
   background-color: #f9f9f9;
   padding: 10px;
