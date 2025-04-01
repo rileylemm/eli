@@ -19,7 +19,8 @@ A Chrome extension that uses AI to explain Reddit posts in a way that's easy to 
   - OpenAI (GPT-3.5/GPT-4)
   - Anthropic (Claude)
   - DeepSeek AI
-  - Custom API endpoints
+  - Google (Gemini)
+  - Custom API endpoints (including support for Groq and Mistral AI)
 - **Customization Options**:
   - Adjust response length to get shorter or more detailed explanations (default: 325 tokens)
   - Control response creativity/focus with temperature settings
@@ -56,11 +57,19 @@ To use the extension with real AI explanations:
 3. Enter your API key
 4. (Optional) Configure additional settings like model, response length, etc.
 5. Click "Save Settings"
+6. Click "Test Connection" to verify your API credentials work properly
 
 ### API Providers
 - **OpenAI**: Get API keys from [OpenAI Platform](https://platform.openai.com/signup)
 - **Anthropic**: Get API access from [Anthropic](https://www.anthropic.com/product)
 - **DeepSeek**: Get API access from [DeepSeek Platform](https://platform.deepseek.com/)
+- **Google**: Get API access from [Google AI Studio](https://ai.google.dev/)
+- **Custom Endpoints**: Supports various API formats, including Groq and Mistral AI
+
+### Custom API Endpoints
+The extension now has improved support for the following custom API providers:
+- **Groq**: Use https://api.groq.com/openai/v1/chat/completions
+- **Mistral AI**: Use https://api.mistral.ai/v1/chat/completions
 
 ## Response Settings
 

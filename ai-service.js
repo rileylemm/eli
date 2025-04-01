@@ -96,6 +96,8 @@ class AIService {
           return await this._callAnthropic(prompt, level);
         case 'deepseek':
           return await this._callDeepSeek(prompt, level);
+        case 'google':
+          return await this._callGoogle(prompt, level);
         case 'custom':
           return await this._callCustomAPI(prompt, level);
         default:
@@ -242,6 +244,61 @@ class AIService {
   }
   
   /**
+   * Call the Google Gemini API
+   * 
+   * @private
+   * @param {string} prompt - The AI prompt
+   * @param {string} level - Explanation level
+   * @returns {Promise<string>} - The explanation
+   */
+  async _callGoogle(prompt, level) {
+    const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/';
+    
+    // Use default Gemini model if none specified
+    const modelToUse = this.model || 'gemini-pro';
+    
+    const fullUrl = `${apiUrl}${modelToUse}:generateContent?key=${this.apiKey}`;
+    
+    const response = await fetch(fullUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {
+                text: `${prompt}\n\nExplain this Reddit post as if I were ${this._getLevelDescription(level)}. Please be concise and straight to the point.`
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: this.temperature,
+          maxOutputTokens: this.maxTokens
+        }
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Google API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    // Extract the response text from the Gemini API response format
+    if (data.candidates && data.candidates.length > 0 && 
+        data.candidates[0].content && data.candidates[0].content.parts && 
+        data.candidates[0].content.parts.length > 0) {
+      return data.candidates[0].content.parts[0].text.trim();
+    }
+    
+    throw new Error('Unexpected response format from Google API');
+  }
+  
+  /**
    * Call a custom API endpoint
    * 
    * @private
@@ -254,27 +311,123 @@ class AIService {
       throw new Error('No custom endpoint provided');
     }
     
-    const response = await fetch(this.customEndpoint, {
+    // Detect if this is a known API provider based on endpoint URL
+    const isGroq = this.customEndpoint.includes('groq.com');
+    const isMistral = this.customEndpoint.includes('mistral.ai');
+    
+    let requestBody;
+    const modelToUse = this.model || '';
+    
+    if (isGroq) {
+      // Use OpenAI-compatible format for Groq
+      requestBody = {
+        model: modelToUse || 'llama3-70b-8192',
+        messages: [
+          {
+            role: 'system',
+            content: `You are a helpful assistant that explains Reddit posts in simple terms. When responding, use language appropriate for ${this._getLevelDescription(level)}. Keep your explanations concise and to the point.`
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: this.temperature,
+        max_tokens: this.maxTokens
+      };
+    } else if (isMistral) {
+      // Use Mistral-specific format
+      requestBody = {
+        model: modelToUse || 'mistral-medium',
+        messages: [
+          {
+            role: 'system',
+            content: `You are a helpful assistant that explains Reddit posts in simple terms. When responding, use language appropriate for ${this._getLevelDescription(level)}. Keep your explanations concise and to the point.`
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: this.temperature,
+        max_tokens: this.maxTokens
+      };
+    } else {
+      // Generic format for custom endpoints
+      requestBody = {
+        prompt: prompt,
+        level: level,
+        model: modelToUse,
+        temperature: this.temperature,
+        max_tokens: this.maxTokens,
+        // Include OpenAI-compatible format as well for broader compatibility
+        messages: [
+          {
+            role: 'system',
+            content: `You are a helpful assistant that explains Reddit posts in simple terms. When responding, use language appropriate for ${this._getLevelDescription(level)}. Keep your explanations concise and to the point.`
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ]
+      };
+    }
+    
+    // Setup request with appropriate headers
+    const requestOptions = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${this.apiKey}`
       },
-      body: JSON.stringify({
-        prompt: prompt,
-        level: level,
-        model: this.model || '',
-        temperature: this.temperature,
-        max_tokens: this.maxTokens
-      })
-    });
+      body: JSON.stringify(requestBody)
+    };
     
-    if (!response.ok) {
-      throw new Error(`Custom API error: ${response.status}`);
+    // Special handling for specific providers
+    if (isGroq) {
+      console.log('Using Groq-compatible format');
+    } else if (isMistral) {
+      console.log('Using Mistral-compatible format');
+      // Mistral uses a different authorization header format
+      requestOptions.headers['Authorization'] = `Bearer ${this.apiKey}`;
     }
     
-    const data = await response.json();
-    return data.explanation || data.text || data.content || data.result || '';
+    try {
+      const response = await fetch(this.customEndpoint, requestOptions);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API error response:', errorText);
+        throw new Error(`Custom API error: ${response.status} - ${errorText}`);
+      }
+      
+      const data = await response.json();
+      
+      // Handle different response formats
+      if (isGroq || isMistral || (data.choices && data.choices.length > 0)) {
+        // OpenAI-like format (also used by Groq and others)
+        if (data.choices && data.choices[0].message) {
+          return data.choices[0].message.content.trim();
+        } else if (data.choices && data.choices[0].text) {
+          return data.choices[0].text.trim();
+        }
+      }
+      
+      // Handle Anthropic-like format
+      if (data.content && Array.isArray(data.content)) {
+        const text = data.content.map(item => item.text).join(' ').trim();
+        if (text) return text;
+      }
+      
+      // Handle other possible formats
+      return data.explanation || data.text || data.content || 
+             data.result || data.response || data.message || 
+             (data.output && data.output.text) || '';
+    } catch (error) {
+      console.error('Error in custom API call:', error);
+      throw error;
+    }
   }
   
   /**
