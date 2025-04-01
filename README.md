@@ -2,6 +2,8 @@
 
 A Chrome extension that uses AI to explain Reddit posts in a way that's easy to understand, with customizable explanation levels for different audiences.
 
+[![Available in the Chrome Web Store](https://storage.googleapis.com/web-dev-uploads/image/WlD8wC6g8khYWPJUsQceQkhXSlv1/UV4C4ybeBTsZt43U4xis.png)](https://chromewebstore.google.com/detail/eli/lpfkgenedglhflneakmjfnhjninginfl)
+
 ![eli Extension Logo](images/greenimage.png)
 
 ## Screenshots
@@ -28,7 +30,7 @@ A Chrome extension that uses AI to explain Reddit posts in a way that's easy to 
 ## Installation
 
 ### From Chrome Web Store
-*(Coming soon)*
+[Install eli from the Chrome Web Store](https://chromewebstore.google.com/detail/eli/lpfkgenedglhflneakmjfnhjninginfl)
 
 ### Manual Installation
 1. Download or clone this repository
